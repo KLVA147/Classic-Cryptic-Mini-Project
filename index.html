@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Classic Cryptic — Classical Cipher Trainer</title>
+  <!-- Seluruh styling dipisahkan ke style.css -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div id="app">
+
+  <!-- ═══════════════ HEADER ═══════════════ -->
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">🔐</div>
+        Classic<span>Cryptic</span>
+      </div>
+      <span class="badge badge-sub">v1.0</span>
+      <div style="margin-left:auto; display:flex; align-items:center; gap:10px;">
+        <div class="info-chip" id="char-count">0 chars</div>
+        <div class="header-badge" id="mode-header-badge">ENCRYPT MODE</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
+  <main>
+    <div class="main-grid">
+
+      <!-- ─────────── KOLOM KIRI ─────────── -->
+      <div class="left-col">
+
+        <!-- Pemilih Algoritma -->
+        <div class="card">
+          <div class="section-title">Algorithm</div>
+          <!-- Tombol-tombol algoritma diinjeksi oleh renderAlgoSelector() di process.js -->
+          <div class="algo-grid" id="algo-grid"></div>
+        </div>
+
+        <!-- Panel Kunci (isi dinamis sesuai algoritma) -->
+        <div class="card">
+          <div class="card-title">
+            <div class="dot" style="background:#6366f1;"></div>
+            Key Controller
+          </div>
+          <!-- Konten diinjeksi oleh renderKeyCtrl() di process.js -->
+          <div class="key-ctrl" id="key-ctrl"></div>
+        </div>
+
+        <!-- Info Algoritma -->
+        <div class="card" style="background: var(--purple-soft); border-color: var(--purple);">
+          <div class="card-title">
+            <div class="dot" style="background:#8b5cf6;"></div>
+            <span id="algo-info-title">Algorithm Info</span>
+          </div>
+          <p style="font-size:12px; color:var(--text-muted); line-height:1.7;"
+             id="algo-info-desc">Select an algorithm to see details.</p>
+          <div style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;"
+               id="algo-info-tags"></div>
+        </div>
+
+      </div><!-- /left-col -->
+
+      <!-- ─────────── KOLOM KANAN ─────────── -->
+      <div class="right-col">
+
+        <!-- Workspace Split-Screen (Input | Proses | Output) -->
+        <div class="card">
+          <div class="card-title">
+            <div class="dot" style="background:#f59e0b;"></div>
+            Workspace
+            <span class="badge badge-trans" id="algo-badge-ws">Caesar</span>
+          </div>
+
+          <div class="workspace">
+
+            <!-- Panel Input -->
+            <div class="ws-panel">
+              <div class="ws-label input-label">▶ Input Text</div>
+              <textarea class="ws-textarea" id="input-text"
+                placeholder="Type or paste text here..." rows="6"
+                spellcheck="false"></textarea>
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <button class="copy-btn" onclick="clearInput()">✕ Clear</button>
+                <button class="copy-btn" onclick="sampleText()">⚡ Sample</button>
+              </div>
+            </div>
+
+            <!-- Tombol Mode bulat — klik untuk toggle Encrypt ↔ Decrypt -->
+            <button class="mode-btn" id="mode-btn" onclick="toggleMode()">
+              <span id="mode-btn-icon">🔒</span>
+            </button>
+
+            <!-- Panel Output -->
+            <div class="ws-panel">
+              <div class="ws-label output-label">◀ Output Text</div>
+              <textarea class="ws-textarea output" id="output-text"
+                placeholder="Result will appear here..." rows="6"
+                readonly spellcheck="false"></textarea>
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <button class="copy-btn" onclick="copyOutput()">⎘ Copy</button>
+                <button class="copy-btn" onclick="swapTexts()">⇅ Swap</button>
+              </div>
+            </div>
+
+          </div><!-- /workspace -->
+
+          <!-- Pesan error (tersembunyi secara default) -->
+          <div class="error-msg" id="error-msg"></div>
+        </div><!-- /workspace card -->
+
+        <!-- Visualisasi Step-by-Step -->
+        <div class="card">
+          <div class="card-title">
+            <div class="dot" style="background:#06b6d4;"></div>
+            Step-by-Step Visualization
+            <span class="badge badge-trans" id="viz-algo-badge">Caesar</span>
+          </div>
+
+          <!-- Kontrol navigasi langkah -->
+          <div class="viz-controls">
+            <button class="viz-btn" id="viz-prev-btn" onclick="vizPrev()" disabled>‹ Prev</button>
+            <button class="viz-btn" id="viz-next-btn" onclick="vizNext()">Next ›</button>
+            <span class="viz-step-info" id="viz-step-info">Step 1 / 1</span>
+            <button class="viz-auto-btn" id="viz-auto-btn" onclick="toggleAutoPlay()">▶ Auto</button>
+          </div>
+
+          <!-- Narasi langkah aktif -->
+          <div class="step-narrative" id="step-narrative">
+            Select an algorithm and type some text to begin visualization.
+          </div>
+
+          <!-- Konten visualisasi (HTML dinamis per algoritma) -->
+          <div class="viz-wrap" id="viz-content"></div>
+        </div><!-- /viz card -->
+
+        <!-- Cryptanalysis Helper -->
+        <div class="card">
+          <div class="card-title">
+            <div class="dot" style="background:#ec4899;"></div>
+            Cryptanalysis Helper
+            <span class="info-chip">Pattern Trainer</span>
+          </div>
+
+          <!-- Tab navigasi panel analisis -->
+          <div class="crypto-tabs">
+            <button class="crypto-tab active" onclick="showCryptoTab('freq')">📊 Frequency</button>
+            <button class="crypto-tab"        onclick="showCryptoTab('ioc')">📐 Index of Coincidence</button>
+            <button class="crypto-tab"        onclick="showCryptoTab('pattern')">🔍 Word Patterns</button>
+          </div>
+
+          <!-- Tab 1: Frequency Analysis -->
+          <div id="crypto-freq" class="crypto-panel">
+            <div style="font-size:11px; color:var(--text-muted); margin-bottom:8px;">
+              Letter frequency analysis of the <strong>output ciphertext</strong>.
+              English average shown in grey.
+            </div>
+            <!-- Grafik batang frekuensi diinjeksi oleh updateFrequency() -->
+            <div class="freq-chart" id="freq-chart"></div>
+          </div>
+
+          <!-- Tab 2: Index of Coincidence -->
+          <div id="crypto-ioc" class="crypto-panel" style="display:none;">
+            <div class="ioc-display">
+              <div class="ioc-value" id="ioc-value">0.000</div>
+              <div class="ioc-hint" id="ioc-hint">Enter ciphertext to calculate</div>
+              <div class="ioc-scale">
+                <span class="ioc-tag" style="background:var(--blue-soft);color:var(--blue-text);">
+                  Random ≈ 0.038
+                </span>
+                <span class="ioc-tag" style="background:var(--yellow-soft);color:var(--accent1);">
+                  Polyalpha ≈ 0.045–0.065
+                </span>
+                <span class="ioc-tag" style="background:var(--pink-soft);color:var(--accent2);">
+                  English ≈ 0.065
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 3: Word Pattern Detector -->
+          <div id="crypto-pattern" class="crypto-panel" style="display:none;">
+            <div style="font-size:11px; color:var(--text-muted); margin-bottom:8px;">
+              Words in output mapped to their structural pattern
+              (e.g. HELLO → 0.1.2.2.3)
+            </div>
+            <!-- Daftar pola kata diinjeksi oleh updateWordPatterns() -->
+            <div class="pattern-list" id="pattern-list"></div>
+          </div>
+
+        </div><!-- /cryptanalysis card -->
+
+      </div><!-- /right-col -->
+    </div><!-- /main-grid -->
+  </main>
+
+  <footer>
+    Classic Cryptic — Classical Cipher Trainer &nbsp;·&nbsp; Built with ♥ for learners
+  </footer>
+
+</div><!-- /app -->
+
+<!-- Seluruh logika aplikasi dipisahkan ke process.js -->
+<script src="process.js"></script>
+</body>
+</html>
